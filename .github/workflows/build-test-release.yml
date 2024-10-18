@@ -346,11 +346,10 @@ jobs:
           path: build/package
       - uses: splunk/appinspect-api-action@v3.0
         with:
-          username: ${{ secrets.SPL_COM_USER }}
-          password: ${{ secrets.SPL_COM_PASSWORD }}
+          username: ${{secrets.SPL_COM_USER}}
+          password: ${{secrets.SPL_COM_PASSWORD}}
           app_path: build/package
           included_tags: ${{ matrix.tags }}
-          appinspect_expected_warnings: tests/testdata/expected_addons/expected_output_global_config_everything/.appinspect_api.expect.yaml
       - uses: actions/upload-artifact@v4
         if: always()
         with:
