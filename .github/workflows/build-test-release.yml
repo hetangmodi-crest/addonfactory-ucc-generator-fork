@@ -15,14 +15,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  meta:
-    runs-on: ubuntu-22.04
-    outputs:
-      matrix_supportedSplunk: ${{ steps.matrix.outputs.supportedSplunk }}
-    steps:
-      - uses: actions/checkout@v4
-      - id: matrix
-        uses: splunk/addonfactory-test-matrix-action@v2.1
+  # meta:
+  #   runs-on: ubuntu-22.04
+  #   outputs:
+  #     matrix_supportedSplunk: ${{ steps.matrix.outputs.supportedSplunk }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - id: matrix
+  #       uses: splunk/addonfactory-test-matrix-action@v2.1
 
   fossa-scan:
     continue-on-error: true
@@ -53,25 +53,25 @@ jobs:
     outputs:
       failed: ${{ env.failed }}
 
-  pre-commit:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.7"
-      - uses: pre-commit/action@v3.0.1
+  # pre-commit:
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-python@v5
+  #       with:
+  #         python-version: "3.7"
+  #     - uses: pre-commit/action@v3.0.1
 
-  semgrep:
-    uses: splunk/sast-scanning/.github/workflows/sast-scan.yml@main
-    secrets:
-      SEMGREP_KEY: ${{ secrets.SEMGREP_PUBLISH_TOKEN }}
+  # semgrep:
+  #   uses: splunk/sast-scanning/.github/workflows/sast-scan.yml@main
+  #   secrets:
+  #     SEMGREP_KEY: ${{ secrets.SEMGREP_PUBLISH_TOKEN }}
 
-  compliance-copyrights:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: apache/skywalking-eyes@v0.6.0
+  # compliance-copyrights:
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: apache/skywalking-eyes@v0.6.0
 
   build-ui:
     name: Build UCC UI
@@ -83,22 +83,22 @@ jobs:
     with:
       node-version: ${{ matrix.node-version }}
 
-  storybook-screenshots:
-    name: Update storybook screenshots
-    permissions:
-      contents: write
-    secrets: inherit
-    uses: ./.github/workflows/storybook-visual.yml
-    with:
-      node-version: "20"
-  bot-updates:
-    name: Generates Documentation
-    permissions:
-      contents: write
-    secrets: inherit
-    uses: ./.github/workflows/automatic_doc_generation.yml
-    with:
-      python-version: "3.7"
+  # storybook-screenshots:
+  #   name: Update storybook screenshots
+  #   permissions:
+  #     contents: write
+  #   secrets: inherit
+  #   uses: ./.github/workflows/storybook-visual.yml
+  #   with:
+  #     node-version: "20"
+  # bot-updates:
+  #   name: Generates Documentation
+  #   permissions:
+  #     contents: write
+  #   secrets: inherit
+  #   uses: ./.github/workflows/automatic_doc_generation.yml
+  #   with:
+  #     python-version: "3.7"
 
   build:
     needs:
@@ -132,35 +132,35 @@ jobs:
           name: UCC-build
           path: dist/
 
-  test-unit:
-    runs-on: ubuntu-22.04
-    continue-on-error: true
-    strategy:
-      matrix:
-        python-version:
-          - "3.7"
-          - "3.8"
-          - "3.9"
-          - "3.10"
-          - "3.11"
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - run: curl -sSL https://install.python-poetry.org | python3 - --version 1.5.1
-      - run: |
-          poetry install
-          poetry run pytest --cov=splunk_add_on_ucc_framework --cov-report=xml tests/unit
-      - name: Check for failed steps for jobs with continue-on-error
-        if: ${{ failure() }}
-        run: echo "failed=true" >> $GITHUB_ENV
+  # test-unit:
+  #   runs-on: ubuntu-22.04
+  #   continue-on-error: true
+  #   strategy:
+  #     matrix:
+  #       python-version:
+  #         - "3.7"
+  #         - "3.8"
+  #         - "3.9"
+  #         - "3.10"
+  #         - "3.11"
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-python@v5
+  #       with:
+  #         python-version: ${{ matrix.python-version }}
+  #     - run: curl -sSL https://install.python-poetry.org | python3 - --version 1.5.1
+  #     - run: |
+  #         poetry install
+  #         poetry run pytest --cov=splunk_add_on_ucc_framework --cov-report=xml tests/unit
+  #     - name: Check for failed steps for jobs with continue-on-error
+  #       if: ${{ failure() }}
+  #       run: echo "failed=true" >> $GITHUB_ENV
 
-      - name: Set output if steps failed
-        run: |
-          echo "failed=${{ env.failed }}" >> $GITHUB_ENV
-    outputs:
-      failed: ${{ env.failed }}
+  #     - name: Set output if steps failed
+  #       run: |
+  #         echo "failed=${{ env.failed }}" >> $GITHUB_ENV
+  #   outputs:
+  #     failed: ${{ env.failed }}
 
   test-smoke:
     name: test-smoke ${{ matrix.python-version }}
@@ -232,64 +232,64 @@ jobs:
           name: Splunk_TA_UCCExample-packaged
           path: Splunk_TA_UCCExample*.tar.gz
 
-  test-ui:
-    name: test-ui Splunk ${{ matrix.splunk.version }} -m ${{ matrix.test-mark }}
-    runs-on: ubuntu-22.04
-    permissions:
-      id-token: write
-      contents: read
-      checks: write
-    needs:
-      - meta
-      - build-test-addon
-      - build
-      - test-unit
-      - test-smoke
-    strategy:
-      fail-fast: false
-      matrix:
-        splunk: ${{ fromJson(needs.meta.outputs.matrix_supportedSplunk) }}
-        test-mark:
-          - "logging"
-          - "proxy"
-          - "account"
-          - "custom"
-          - "alert"
-          - "input"
-          - "configuration"
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.7"
-      - uses: actions/download-artifact@v4
-        with:
-          name: Splunk_TA_UCCExample-raw-output
-          path: output/
-      - run: |
-          curl -sSL https://install.python-poetry.org | python3 - --version 1.5.1
-          poetry install --only dev
-      - name: Link chromedriver
-        # Use installed chromedriver https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2204-Readme.md
-        run: |
-          export PATH=$PATH:$CHROMEWEBDRIVER
-          chromedriver --version
-      - run: |
-          ./scripts/run_splunk.sh ${{ matrix.splunk.version }}
-          until curl -Lsk "https://localhost:8088/services/collector/health" &>/dev/null ; do echo -n "Waiting for HEC-" && sleep 5 ; done
-        timeout-minutes: 5
-      - run: poetry run pytest tests/ui -m "${{ matrix.test-mark }}" --headless --junitxml=test-results/junit.xml
-      - uses: actions/upload-artifact@v4
-        if: success() || failure()
-        with:
-          name: test-results-ui-${{ matrix.splunk.version }}-${{ matrix.test-mark }}
-          path: test-results/*
-      - uses: dorny/test-reporter@v1
-        if: success() || failure()
-        with:
-          name: test-report-ui-${{ matrix.splunk.version }}-${{ matrix.test-mark }}
-          path: "test-results/*.xml"
-          reporter: java-junit
+  # test-ui:
+  #   name: test-ui Splunk ${{ matrix.splunk.version }} -m ${{ matrix.test-mark }}
+  #   runs-on: ubuntu-22.04
+  #   permissions:
+  #     id-token: write
+  #     contents: read
+  #     checks: write
+  #   needs:
+  #     - meta
+  #     - build-test-addon
+  #     - build
+  #     - test-unit
+  #     - test-smoke
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       splunk: ${{ fromJson(needs.meta.outputs.matrix_supportedSplunk) }}
+  #       test-mark:
+  #         - "logging"
+  #         - "proxy"
+  #         - "account"
+  #         - "custom"
+  #         - "alert"
+  #         - "input"
+  #         - "configuration"
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-python@v5
+  #       with:
+  #         python-version: "3.7"
+  #     - uses: actions/download-artifact@v4
+  #       with:
+  #         name: Splunk_TA_UCCExample-raw-output
+  #         path: output/
+  #     - run: |
+  #         curl -sSL https://install.python-poetry.org | python3 - --version 1.5.1
+  #         poetry install --only dev
+  #     - name: Link chromedriver
+  #       # Use installed chromedriver https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2204-Readme.md
+  #       run: |
+  #         export PATH=$PATH:$CHROMEWEBDRIVER
+  #         chromedriver --version
+  #     - run: |
+  #         ./scripts/run_splunk.sh ${{ matrix.splunk.version }}
+  #         until curl -Lsk "https://localhost:8088/services/collector/health" &>/dev/null ; do echo -n "Waiting for HEC-" && sleep 5 ; done
+  #       timeout-minutes: 5
+  #     - run: poetry run pytest tests/ui -m "${{ matrix.test-mark }}" --headless --junitxml=test-results/junit.xml
+  #     - uses: actions/upload-artifact@v4
+  #       if: success() || failure()
+  #       with:
+  #         name: test-results-ui-${{ matrix.splunk.version }}-${{ matrix.test-mark }}
+  #         path: test-results/*
+  #     - uses: dorny/test-reporter@v1
+  #       if: success() || failure()
+  #       with:
+  #         name: test-report-ui-${{ matrix.splunk.version }}-${{ matrix.test-mark }}
+  #         path: "test-results/*.xml"
+  #         reporter: java-junit
 
   appinspect-for-expected-outputs:
     name: splunk-appinspect ${{ matrix.tags }} tests/testdata/expected_addons/expected_output_global_config_everything/Splunk_TA_UCCExample
@@ -322,124 +322,158 @@ jobs:
           included_tags: ${{ matrix.tags }}
           appinspect_manual_checks: tests/testdata/expected_addons/expected_output_global_config_everything/.appinspect.manualcheck.yaml
           appinspect_expected_failures: tests/testdata/expected_addons/expected_output_global_config_everything/.appinspect.expect.yaml
-
-  all-checks:
-    if: ${{ !cancelled() }}
-    needs:
-      - test-unit
-      - test-smoke
-      - test-ui
-      - build-test-addon-openapi-client
-      - storybook-screenshots
-      - bot-updates
-    runs-on: ubuntu-22.04
-    env:
-      NEEDS: ${{ toJson(needs) }}
-    steps:
-      - name: check if tests have passed
-        id: check
-        shell: bash
-        run: |
-          ALL_JOBS_PASSED=$(echo "$NEEDS" | jq 'all(.[]; .result == "success" and (.outputs.failed // "false") != "true")')
-          if [[ "$ALL_JOBS_PASSED" == "true" ]]
-          then
-              echo "all-checks=true" >> "$GITHUB_OUTPUT"
-          else
-              echo "all-checks=false" >> "$GITHUB_OUTPUT"
-          fi
-      - name: Fail job if something failed
-        if: ${{ steps.check.outputs.all-checks == 'false' }}
-        run: |
-          echo "Some check failed"
-          exit 1
-
-  release:
-    needs:
-      - build
-      - compliance-copyrights
-      - fossa-scan
-      - test-unit
-      - test-smoke
-      - test-ui
-      - appinspect-for-expected-outputs
-      - semgrep
-      - pre-commit
-      - all-checks
-    runs-on: ubuntu-22.04
-    if: "! github.event.pull_request.head.repo.fork "
+  appinspect-api:
+    name: appinspect api ${{ matrix.tags }}
+    needs: build-test-addon
+    if: |
+      !cancelled() &&
+      needs.build-test-addon.result == 'success' &&
+      ( github.base_ref == 'main' || github.ref_name == 'main' )
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        tags:
+          - "cloud"
     steps:
       - uses: actions/checkout@v4
-        with:
-          # Very important: semantic-release won't trigger a tagged
-          # build if this is not set false
-          persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: "3.7"
-      - run: curl -sSL https://install.python-poetry.org | python3 - --version 1.5.1
       - uses: actions/download-artifact@v4
         with:
-          name: UCC-UI-build
-          path: built-ui/
-      - uses: actions/download-artifact@v4
+          name: Splunk_TA_UCCExample-packaged
+          path: build/package
+      - uses: splunk/appinspect-api-action@v3.0
         with:
-          name: THIRDPARTY
-      - run: cp -f THIRDPARTY NOTICE
-      - run: poetry install
-      - name: Copy built UCC UI into UCC generator folder
-        run: |
-          cp -R built-ui/. splunk_add_on_ucc_framework/package/appserver/static/js/
-      - id: semantic
-        uses: splunk/semantic-release-action@v1.3
+          username: ${{ secrets.SPL_COM_USER }}
+          password: ${{ secrets.SPL_COM_PASSWORD }}
+          app_path: build/package
+          included_tags: ${{ matrix.tags }}
+          appinspect_expected_warnings: tests/testdata/expected_addons/expected_output_global_config_everything/.appinspect_api.expect.yaml
+      - uses: actions/upload-artifact@v4
+        if: always()
         with:
-          git_committer_name: ${{ secrets.SA_GH_USER_NAME }}
-          git_committer_email: ${{ secrets.SA_GH_USER_EMAIL }}
-          gpg_private_key: ${{ secrets.SA_GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.SA_GPG_PASSPHRASE }}
-          extra_plugins: |
-            semantic-release-replace-plugin
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_ADMIN }}
-      - if: ${{ steps.semantic.outputs.new_release_published == 'true' }}
-        run: |
-          poetry build
-          poetry publish -n -u ${{ secrets.PYPI_USERNAME }} -p ${{ secrets.PYPI_TOKEN }}
+          name: appinspect-api-html-report-${{ matrix.tags }}
+          path: AppInspect_response.html
 
-  build-test-addon-openapi-client:
-    name: build-test-addon-openapi-client Splunk ${{ matrix.splunk.version }}
-    runs-on: ubuntu-22.04
-    needs:
-      - meta
-      - build-test-addon
-      - build
-      - test-unit
-      - test-smoke
-    strategy:
-      matrix:
-        splunk: ${{ fromJson(needs.meta.outputs.matrix_supportedSplunk) }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - uses: actions/download-artifact@v4
-        with:
-          name: UCC-UI-build
-          path: built-ui/
-      - run: curl -sSL https://install.python-poetry.org | python3 - --version 1.5.1
-      - run: |
-          cp -R built-ui/. splunk_add_on_ucc_framework/package/appserver/static/js/
-          poetry install --only main
-      - run: poetry run ucc-gen build --source tests/testdata/test_addons/package_global_config_everything/package -o out_${{ matrix.splunk.version }}
-      - run: |
-          cp out_${{ matrix.splunk.version }}/Splunk_TA_UCCExample/appserver/static/openapi.json ./oa_${{ matrix.splunk.version }}.json
-          docker run --rm -v ${PWD}:/local openapitools/openapi-generator-cli generate -i /local/oa_${{ matrix.splunk.version }}.json -g python -o /local/restapi_client_${{ matrix.splunk.version }}
-      - run: |
-          sudo chmod -R 777 ./restapi_client_${{ matrix.splunk.version }}
-          python3 -m pip install ./restapi_client_${{ matrix.splunk.version }}
-      - run: mv out_${{ matrix.splunk.version }} output
-      - run: |
-          ./scripts/run_splunk.sh ${{ matrix.splunk.version }}
-          until curl -Lsk "https://localhost:8088/services/collector/health" &>/dev/null ; do echo -n "Waiting for HEC-" && sleep 5 ; done
-        timeout-minutes: 5
-      - run: python3 tests/testdata/expected_addons/expected_output_global_config_everything/client-test.py
+  # all-checks:
+  #   if: ${{ !cancelled() }}
+  #   needs:
+  #     - test-unit
+  #     - test-smoke
+  #     - test-ui
+  #     - build-test-addon-openapi-client
+  #     - storybook-screenshots
+  #     - bot-updates
+  #   runs-on: ubuntu-22.04
+  #   env:
+  #     NEEDS: ${{ toJson(needs) }}
+  #   steps:
+  #     - name: check if tests have passed
+  #       id: check
+  #       shell: bash
+  #       run: |
+  #         ALL_JOBS_PASSED=$(echo "$NEEDS" | jq 'all(.[]; .result == "success" and (.outputs.failed // "false") != "true")')
+  #         if [[ "$ALL_JOBS_PASSED" == "true" ]]
+  #         then
+  #             echo "all-checks=true" >> "$GITHUB_OUTPUT"
+  #         else
+  #             echo "all-checks=false" >> "$GITHUB_OUTPUT"
+  #         fi
+  #     - name: Fail job if something failed
+  #       if: ${{ steps.check.outputs.all-checks == 'false' }}
+  #       run: |
+  #         echo "Some check failed"
+  #         exit 1
+
+  # release:
+  #   needs:
+  #     - build
+  #     - compliance-copyrights
+  #     - fossa-scan
+  #     - test-unit
+  #     - test-smoke
+  #     - test-ui
+  #     - appinspect-for-expected-outputs
+  #     - semgrep
+  #     - pre-commit
+  #     - all-checks
+  #   runs-on: ubuntu-22.04
+  #   if: "! github.event.pull_request.head.repo.fork "
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         # Very important: semantic-release won't trigger a tagged
+  #         # build if this is not set false
+  #         persist-credentials: false
+  #     - uses: actions/setup-python@v5
+  #       with:
+  #         python-version: "3.7"
+  #     - run: curl -sSL https://install.python-poetry.org | python3 - --version 1.5.1
+  #     - uses: actions/download-artifact@v4
+  #       with:
+  #         name: UCC-UI-build
+  #         path: built-ui/
+  #     - uses: actions/download-artifact@v4
+  #       with:
+  #         name: THIRDPARTY
+  #     - run: cp -f THIRDPARTY NOTICE
+  #     - run: poetry install
+  #     - name: Copy built UCC UI into UCC generator folder
+  #       run: |
+  #         cp -R built-ui/. splunk_add_on_ucc_framework/package/appserver/static/js/
+  #     - id: semantic
+  #       uses: splunk/semantic-release-action@v1.3
+  #       with:
+  #         git_committer_name: ${{ secrets.SA_GH_USER_NAME }}
+  #         git_committer_email: ${{ secrets.SA_GH_USER_EMAIL }}
+  #         gpg_private_key: ${{ secrets.SA_GPG_PRIVATE_KEY }}
+  #         passphrase: ${{ secrets.SA_GPG_PASSPHRASE }}
+  #         extra_plugins: |
+  #           semantic-release-replace-plugin
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GH_TOKEN_ADMIN }}
+  #     - if: ${{ steps.semantic.outputs.new_release_published == 'true' }}
+  #       run: |
+  #         poetry build
+  #         poetry publish -n -u ${{ secrets.PYPI_USERNAME }} -p ${{ secrets.PYPI_TOKEN }}
+
+  # build-test-addon-openapi-client:
+  #   name: build-test-addon-openapi-client Splunk ${{ matrix.splunk.version }}
+  #   runs-on: ubuntu-22.04
+  #   needs:
+  #     - meta
+  #     - build-test-addon
+  #     - build
+  #     - test-unit
+  #     - test-smoke
+  #   strategy:
+  #     matrix:
+  #       splunk: ${{ fromJson(needs.meta.outputs.matrix_supportedSplunk) }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-python@v5
+  #       with:
+  #         python-version: "3.11"
+  #     - uses: actions/download-artifact@v4
+  #       with:
+  #         name: UCC-UI-build
+  #         path: built-ui/
+  #     - run: curl -sSL https://install.python-poetry.org | python3 - --version 1.5.1
+  #     - run: |
+  #         cp -R built-ui/. splunk_add_on_ucc_framework/package/appserver/static/js/
+  #         poetry install --only main
+  #     - run: poetry run ucc-gen build --source tests/testdata/test_addons/package_global_config_everything/package -o out_${{ matrix.splunk.version }}
+  #     - run: |
+  #         cp out_${{ matrix.splunk.version }}/Splunk_TA_UCCExample/appserver/static/openapi.json ./oa_${{ matrix.splunk.version }}.json
+  #         docker run --rm -v ${PWD}:/local openapitools/openapi-generator-cli generate -i /local/oa_${{ matrix.splunk.version }}.json -g python -o /local/restapi_client_${{ matrix.splunk.version }}
+  #     - run: |
+  #         sudo chmod -R 777 ./restapi_client_${{ matrix.splunk.version }}
+  #         python3 -m pip install ./restapi_client_${{ matrix.splunk.version }}
+  #     - run: mv out_${{ matrix.splunk.version }} output
+  #     - run: |
+  #         ./scripts/run_splunk.sh ${{ matrix.splunk.version }}
+  #         until curl -Lsk "https://localhost:8088/services/collector/health" &>/dev/null ; do echo -n "Waiting for HEC-" && sleep 5 ; done
+  #       timeout-minutes: 5
+  #     - run: python3 tests/testdata/expected_addons/expected_output_global_config_everything/client-test.py

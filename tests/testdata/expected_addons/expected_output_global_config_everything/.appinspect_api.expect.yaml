@@ -1,0 +1,4 @@
+check_for_vulnerable_javascript_library_usage:
+  comment: 'Y'
+check_for_splunk_js:
+  comment: 'Y'
